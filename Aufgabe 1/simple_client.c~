@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <time.h>
+
+#define Port 12345
+int main()
+{
+	int sockfd, new_sockfd;
+	int result = -1;
+	char buffer[1024];
+
+	char sec;
+	char min;
+	char hour;
+
+	struct tm *sclienttime;
+	time_t sctime;
+
+	int i;
+	for(i = 1; i < 6; i++)
+	{
+		sockfd = socket(PF_INET, SOCK_STREAM, 0);
+		if(sockfd == -1)
+			printf("failed to create TCP/IP socket\n");  		
+
+		struct sockaddr_in server_addr;
+  		server_addr.sin_family = PF_INET;
+  		server_addr.sin_port = htons(Port);
+  		server_addr.sin_addr.s_addr = inet_addr("192.168.2.128");
+
+	//int i;
+	//for(i = 0; i < 5; i++)
+	//{
+		new_sockfd = connect(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr));
+		if(new_sockfd == -1)
+			printf("connect failed\n");
+
+		if((recv(sockfd, &sec, sizeof(sec), 0)) == -1)
+			printf("failed to receive seconds\n");
+		if((recv(sockfd, &min, sizeof(min), 0)) == -1)
+			printf("failed to receive minutes\n");
+		if((recv(sockfd, &hour, sizeof(hour), 0)) == -1)
+			printf("failed to receive hours\n");
+		
+		time(&sctime);
+		sclienttime = localtime(&sctime);
+
+		printf("[%d:%d:%d] Antwort %i: %d:%d:%d\n", hour, min, sec, i, sclienttime->tm_hour, sclienttime->tm_min, sclienttime->tm_sec);
+	}
+}
